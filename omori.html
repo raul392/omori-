@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>Omori Grid Infinito Fullscreen com Sprite Direção</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%; overflow: hidden; background: black;
+  }
+  #game {
+    position: relative;
+    width: 100vw; height: 100vh;
+    overflow: hidden;
+    background: black;
+  }
+  #map {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: url('tile.png');
+    background-repeat: repeat;
+    background-size: 64px 64px;
+    background-position: 0 0;
+  }
+  #player {
+    position: absolute;
+    width: 64px; height: 64px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    user-select: none;
+    pointer-events: none;
+    image-rendering: pixelated;
+  }
+</style>
+</head>
+<body>
+  <div id="game">
+    <div id="map"></div>
+    <img id="player" src="baixo.png" alt="Personagem" />
+  </div>
+<script>
+  const map = document.getElementById("map");
+  const player = document.getElementById("player");
+
+  const tileSize = 64;
+  const speed = 6;
+
+  let posX = 0;
+  let posY = 0;
+
+  const keysPressed = new Set();
+
+  function updateSprite(direction) {
+    if (player.dataset.dir !== direction) {
+      player.src = direction + ".png";
+      player.dataset.dir = direction;
+    }
+  }
+
+  function animate() {
+    let velX = 0;
+    let velY = 0;
+
+    if (keysPressed.has("ArrowUp")) velY += speed;
+    if (keysPressed.has("ArrowDown")) velY -= speed;
+    if (keysPressed.has("ArrowLeft")) velX += speed;
+    if (keysPressed.has("ArrowRight")) velX -= speed;
+
+    posX += velX;
+    posY += velY;
+
+    posX = posX % tileSize;
+    posY = posY % tileSize;
+
+    map.style.backgroundPosition = `${posX}px ${posY}px`;
+
+    // Lógica para sprite:
+    if (keysPressed.has("ArrowUp")) {
+      updateSprite("cima");
+    } else if (keysPressed.has("ArrowDown")) {
+      updateSprite("baixo");
+    } else if (velX !== 0) {
+      if (velX > 0) updateSprite("esquerda");
+      else updateSprite("direita");
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (
+      e.key === "ArrowUp" ||
+      e.key === "ArrowDown" ||
+      e.key === "ArrowLeft" ||
+      e.key === "ArrowRight"
+    ) {
+      keysPressed.add(e.key);
+      e.preventDefault();
+    }
+  });
+
+  document.addEventListener("keyup", (e) => {
+    if (
+      e.key === "ArrowUp" ||
+      e.key === "ArrowDown" ||
+      e.key === "ArrowLeft" ||
+      e.key === "ArrowRight"
+    ) {
+      keysPressed.delete(e.key);
+      e.preventDefault();
+    }
+  });
+
+  animate();
+</script>
+</body>
+</html>
